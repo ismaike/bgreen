@@ -11,8 +11,26 @@ import java.util.Properties;
 @Data
 public class MetricParam {
 
-    private Integer metricType;
+    private int metricType;
+    private String groupCode;
+    private String appName;
     private Properties properties;
+
+    public MetricParam() {
+        properties = new Properties();
+    }
+
+    public MetricParam(int metricType) {
+        this.metricType = metricType;
+        properties = new Properties();
+    }
+
+    public MetricParam(int metricType, String groupCode, String appName) {
+        this.metricType = metricType;
+        this.groupCode = groupCode;
+        this.appName = appName;
+        properties = new Properties();
+    }
 
     public void put(String metricKey, String metricValue) {
         properties.put(metricKey, metricValue);

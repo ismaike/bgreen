@@ -1,10 +1,9 @@
 package io.github.interceptor;
 
-import io.github.Intercept;
+import io.github.BgreenProperties;
 import io.github.common.Metric;
+import io.github.common.MetricType;
 import io.github.model.MetricParam;
-import io.github.remoting.api.ServerApi;
-import io.github.remoting.client.OkHttpClient;
 import io.github.util.GsonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -15,6 +14,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -27,15 +27,22 @@ import java.util.Arrays;
  */
 @Slf4j
 @Aspect
-public class HttpRequestMappingInterceptor implements Intercept {
+public class HttpRequestMappingInterceptor extends BaseIntercept {
 
     private static final String URL_SEPARATOR = "/";
+    @Resource
+    private BgreenProperties bgreenProperties;
+
+    @Override
+    public BgreenProperties getBgreenProperties() {
+        return bgreenProperties;
+    }
 
     @Around("@annotation(org.springframework.web.bind.annotation.RequestMapping)")
     public Object invoke(ProceedingJoinPoint invocation) throws Throwable {
         // 记录当前时间
         long start = System.currentTimeMillis();
-        MetricParam param = new MetricParam();
+        MetricParam param = new MetricParam(MetricType.HTTP_REQUEST.getType(), bgreenProperties.getGroupCode(), bgreenProperties.getAppName());
         for (Object arg : invocation.getArgs()) {
             if (arg instanceof HttpServletRequest) {
                 HttpServletRequest req = (HttpServletRequest) arg;
@@ -77,14 +84,9 @@ public class HttpRequestMappingInterceptor implements Intercept {
             throw e;
         }
         long costTime = System.currentTimeMillis() - start;
-        param.put("costTime", String.valueOf(costTime));
-        send(param);
+        param.put(Metric.REQUEST_COST_TIME, String.valueOf(costTime));
+        reportMetricDataToServer(param);
         return result;
-    }
-
-    @Override
-    public ServerApi api() {
-        return new OkHttpClient("http://127.0.0.1:8080/upload");
     }
 
     private String wrapPrefixPathSeparator(String path) {

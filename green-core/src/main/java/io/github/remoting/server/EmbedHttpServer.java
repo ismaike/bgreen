@@ -1,7 +1,7 @@
 package io.github.remoting.server;
 
 import io.github.remoting.api.ClientApi;
-import io.github.thread.RegistryThread;
+import io.github.remoting.api.ClientApiImpl;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -37,9 +37,9 @@ public class EmbedHttpServer {
                 throw new RuntimeException("BGreen, EmbedServer bizThreadPool is EXHAUSTED!");
             });
     private Thread thread;
-    private ClientApi remoteService;
+    private ClientApi remoteService = new ClientApiImpl();
 
-    public void start(final int port, final String appName, final String address) {
+    public void start(final int port) {
         thread = new Thread(() -> {
             // param
             EventLoopGroup bossGroup = new NioEventLoopGroup();
@@ -59,10 +59,8 @@ public class EmbedHttpServer {
                             }
                         })
                         .childOption(ChannelOption.SO_KEEPALIVE, true);
-                ChannelFuture future = bootstrap.bind().sync();
+                ChannelFuture future = bootstrap.bind(port).sync();
                 log.info("server start success, port = {}", port);
-
-                startRegistry(appName, address);
 
                 future.channel().closeFuture().sync();
             } catch (Exception e) {
@@ -84,7 +82,11 @@ public class EmbedHttpServer {
         thread.start();
     }
 
-    public void startRegistry(final String appName, final String address) {
-        RegistryThread.getInstance().start(appName, address);
+    public void stop() throws Exception {
+        // destroy server thread
+        if (thread != null && thread.isAlive()) {
+            thread.interrupt();
+        }
+        log.info("BGreen, EmbedServer destroy success.");
     }
 }

@@ -1,5 +1,6 @@
 package io.github.remoting.server;
 
+import io.github.model.MetricConfig;
 import io.github.model.Result;
 import io.github.remoting.api.ClientApi;
 import io.github.util.GsonUtil;
@@ -65,6 +66,10 @@ public class EmbedHttpServerHandler extends SimpleChannelInboundHandler<FullHttp
         try {
             if ("/beat".equals(uri)) {
                 return remoteService.beat();
+            } else if ("/pushConfig".equals(uri)) {
+                MetricConfig config = GsonUtil.fromJson(requestData, MetricConfig.class);
+                log.info("收到服务端推送的配置信息, config={}", requestData);
+                return remoteService.pushConfig(config);
             } else {
                 return Result.fail("invalid request, uri-mapping(" + uri + ") not found.");
             }
@@ -80,7 +85,7 @@ public class EmbedHttpServerHandler extends SimpleChannelInboundHandler<FullHttp
     private void writeResponse(ChannelHandlerContext ctx, boolean keepAlive, String responseJson) {
         // write response
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, Unpooled.copiedBuffer(responseJson, CharsetUtil.UTF_8));
-        response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html;charset=UTF-8");
+        response.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json;charset=UTF-8");
         response.headers().set(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
         if (keepAlive) {
             response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);

@@ -1,6 +1,7 @@
 package io.github.remoting.api;
 
 
+import io.github.model.MetricConfig;
 import io.github.model.Result;
 
 /**
@@ -14,4 +15,11 @@ public interface ClientApi {
      * @return
      */
     Result<String> beat();
+
+    /**
+     * TODO 远程配置推送
+     *
+     * @return
+     */
+    Result<Boolean> pushConfig(MetricConfig config);
 }

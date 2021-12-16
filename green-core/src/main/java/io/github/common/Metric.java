@@ -27,5 +27,20 @@ public class Metric {
      */
     public static final String REQUEST_COST_TIME = "reqCostTime";
 
+    /**
+     * sql文本
+     */
+    public static final String SQL_TEXT = "sql";
+
+    /**
+     * sql执行时长
+     */
+    public static final String SQL_COST_TIME = "sqlCostTime";
+
+    public static final String EXCEPTION_METHOD = "exceptionMethod";
+    public static final String EXCEPTION_MSG = "exceptionMsg";
+    public static final String EXCEPTION_CLASS = "exceptionClass";
+    public static final String EXCEPTION_STACK = "exceptionStack";
+
 
 }
